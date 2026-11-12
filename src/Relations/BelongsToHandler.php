@@ -22,6 +22,9 @@ final class BelongsToHandler implements RelationHandler
     use EagerFetching;
     use PreservesReusedKeys;
 
+    /**
+     * @param  Relation<Model, Model, mixed>  $relation
+     */
     public function supports(Relation $relation): bool
     {
         return get_class($relation) === BelongsTo::class;
@@ -37,25 +40,37 @@ final class BelongsToHandler implements RelationHandler
         return false;
     }
 
+    /**
+     * @param  Relation<Model, Model, mixed>  $relation
+     */
     public function staticRelated(Relation $relation): Model
     {
         return $relation->getRelated();
     }
 
+    /**
+     * @param  Relation<Model, Model, mixed>  $relation
+     */
     public function parentColumns(Relation $relation): array
     {
-        /** @var BelongsTo $relation */
+        /** @var BelongsTo<Model, Model> $relation */
         return [$relation->getForeignKeyName()];
     }
 
+    /**
+     * @param  Relation<Model, Model, mixed>  $relation
+     */
     public function fetch(Relation $relation, array $parents, string $name, string $path, array $filters, bool $withoutGlobalScopes, Graph $graph): array
     {
         return $this->eager($relation, $parents, $name, $filters, $withoutGlobalScopes);
     }
 
+    /**
+     * @param  Relation<Model, Model, mixed>  $relation
+     */
     public function connect(Graph $graph, GraphNode $parent, GraphNode $target, Relation $relation, ?Model $pivot, string $path): void
     {
-        /** @var BelongsTo $relation */
+        /** @var BelongsTo<Model, Model> $relation */
         $ownerKey = $relation->getOwnerKeyName();
 
         $parent->assign($target->isCopy()

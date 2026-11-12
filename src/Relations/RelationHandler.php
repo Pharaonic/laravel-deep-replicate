@@ -22,6 +22,8 @@ interface RelationHandler
 {
     /**
      * Whether this handler replicates the given relation instance (matched by exact class).
+     *
+     * @param  Relation<Model, Model, mixed>  $relation
      */
     public function supports(Relation $relation): bool;
 
@@ -32,12 +34,15 @@ interface RelationHandler
     /**
      * The related model when it is known without data; null when it is
      * decided per record (MorphTo).
+     *
+     * @param  Relation<Model, Model, mixed>  $relation
      */
     public function staticRelated(Relation $relation): ?Model;
 
     /**
      * Columns of the parent copy that this relation manages.
      *
+     * @param  Relation<Model, Model, mixed>  $relation
      * @return list<string>
      */
     public function parentColumns(Relation $relation): array;
@@ -47,12 +52,15 @@ interface RelationHandler
      *
      * @param  list<Model>  $parents  throwaway copies of the source parents
      * @param  list<callable>  $filters
+     * @param  Relation<Model, Model, mixed>  $relation
      * @return list<list<array{0: Model, 1: Model|null}>> per parent: [target, pivot]
      */
     public function fetch(Relation $relation, array $parents, string $name, string $path, array $filters, bool $withoutGlobalScopes, Graph $graph): array;
 
     /**
      * Record the edge between a parent copy and a target node.
+     *
+     * @param  Relation<Model, Model, mixed>  $relation
      */
     public function connect(Graph $graph, GraphNode $parent, GraphNode $target, Relation $relation, ?Model $pivot, string $path): void;
 }

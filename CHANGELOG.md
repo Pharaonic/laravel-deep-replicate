@@ -2,6 +2,14 @@
 
 All notable changes to this project are documented here.
 
+## 11.0.0 - Unreleased
+
+### Compatibility
+
+- Laravel 11.0+ on PHP 8.2, 8.3 and 8.4.
+- The same API and behavior as 10.0.0. The relation types in the PHPDoc carry the Laravel 11 generics.
+- The test suite runs on Pest 3 and PHPUnit 11.
+
 ## 10.0.0 - Unreleased
 
 ### Compatibility

@@ -4,8 +4,8 @@ Install the package with Composer. Laravel discovers the service provider and th
 
 ### Requirements
 
-- PHP 8.1, 8.2 or 8.3
-- Laravel 10.0 or newer within 10.x (`illuminate/database`, `illuminate/support`, `illuminate/container`, `illuminate/contracts`)
+- PHP 8.2, 8.3 or 8.4
+- Laravel 11.0 or newer within 11.x (`illuminate/database`, `illuminate/support`, `illuminate/container`, `illuminate/contracts`)
 
 Each Laravel major has its own release line with the same API. Pick the line that matches your application (see [Compatibility](#compatibility)).
 
@@ -21,7 +21,7 @@ There is no configuration file to publish and no migration to run.
 
 The trait adds `deepReplicate()` to a model. The facade and the `DeepReplicator` service work on any model without it.
 
-```php title="app/Order.php"
+```php title="app/Models/Order.php"
 use Illuminate\Database\Eloquent\Model;
 use Pharaonic\Laravel\DeepReplicate\Concerns\DeepReplicates;
 

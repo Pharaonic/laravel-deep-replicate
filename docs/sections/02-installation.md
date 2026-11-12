@@ -21,7 +21,7 @@ There is no configuration file to publish and no migration to run.
 
 The trait adds `deepReplicate()` to a model. The facade and the `DeepReplicator` service work on any model without it.
 
-```php title="app/Order.php"
+```php title="app/Models/Order.php"
 use Illuminate\Database\Eloquent\Model;
 use Pharaonic\Laravel\DeepReplicate\Concerns\DeepReplicates;
 

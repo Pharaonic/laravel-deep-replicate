@@ -98,7 +98,7 @@ test('a record copied and reused in one operation is rejected before writing', f
     $order = $this->seedOrder();
     $before = $this->counts();
 
-    $exception = $this->assertThrows(ConflictingIdentityStrategyException::class, function () use ($order) {
+    $exception = $this->assertThrown(ConflictingIdentityStrategyException::class, function () use ($order) {
         DeepReplicate::for($order)->copy('items.product')->reuse('activeItems.product')->replicate();
     });
 
@@ -112,7 +112,7 @@ test('a record copied with two different configurations is rejected', function (
     $order = $this->seedOrder();
     $before = $this->counts();
 
-    $this->assertThrows(ConflictingNodeConfigurationException::class, function () use ($order) {
+    $this->assertThrown(ConflictingNodeConfigurationException::class, function () use ($order) {
         DeepReplicate::for($order)
             ->copy('items', 'activeItems')
             ->configure('items', function (RelationRule $rule) {
@@ -168,7 +168,7 @@ test('a non nullable foreign key cycle fails and persists nothing', function () 
     StrictTeam::query()->insert(['id' => 1, 'owner_id' => 1, 'name' => 'Core']);
     $before = $this->counts();
 
-    $exception = $this->assertThrows(UnresolvableForeignKeyCycleException::class, function () {
+    $exception = $this->assertThrown(UnresolvableForeignKeyCycleException::class, function () {
         DeepReplicate::for(StrictUser::findOrFail(1))->copy('team', 'team.owner')->replicate();
     });
 
@@ -183,7 +183,7 @@ test('a nested path through morph to must exist on every encountered type', func
     $videoActivity = Activity::create(['subject_id' => $blog['video']->id, 'subject_type' => get_class($blog['video']), 'description' => 'uploaded']);
     $before = $this->counts();
 
-    $exception = $this->assertThrows(InvalidRelationshipPathException::class, function () use ($videoActivity) {
+    $exception = $this->assertThrown(InvalidRelationshipPathException::class, function () use ($videoActivity) {
         DeepReplicate::for($videoActivity)->copy('subject', 'subject.comments')->replicate();
     });
 
@@ -201,7 +201,7 @@ test('a nested path through morph to must exist on every encountered type', func
 test('an unknown morph type is reported with the path', function () {
     $activity = Activity::create(['subject_id' => 1, 'subject_type' => 'missing-type', 'description' => 'broken']);
 
-    $exception = $this->assertThrows(InvalidRelationshipPathException::class, function () use ($activity) {
+    $exception = $this->assertThrown(InvalidRelationshipPathException::class, function () use ($activity) {
         DeepReplicate::for($activity)->copy('subject')->replicate();
     });
 

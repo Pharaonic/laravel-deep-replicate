@@ -27,7 +27,7 @@ test('using loaded never loads a missing relation', function () {
     $post = $this->seedBlog()['post'];
     $before = $this->counts();
 
-    $exception = $this->assertThrows(MissingLoadedRelationException::class, function () use ($post) {
+    $exception = $this->assertThrown(MissingLoadedRelationException::class, function () use ($post) {
         DeepReplicate::for($post)->copy('comments')->usingLoaded('comments')->replicate();
     });
 
@@ -42,11 +42,11 @@ test('nested using loaded requires the relation on every source parent', functio
     $order->load('items');
     $order->items->first()->load('options');
 
-    $this->assertThrows(MissingLoadedRelationException::class, function () use ($order) {
+    $this->assertThrown(MissingLoadedRelationException::class, function () use ($order) {
         DeepReplicate::for($order)->copy('items.options')->usingLoaded('items', 'items.options')->replicate();
     });
 
-    $this->assertThrows(MissingLoadedRelationException::class, function () use ($order) {
+    $this->assertThrown(MissingLoadedRelationException::class, function () use ($order) {
         // Fresh items never carry loaded options.
         DeepReplicate::for($order)->copy('items.options')->usingLoaded('items.options')->replicate();
     });
@@ -112,7 +112,7 @@ test('a filter on a belongs to path keeps the foreign key and warns', function (
 test('filter and using loaded on one path are incompatible', function () {
     $order = $this->seedOrder()->load('items');
 
-    $this->assertThrows(IncompatibleRelationOptionsException::class, function () use ($order) {
+    $this->assertThrown(IncompatibleRelationOptionsException::class, function () use ($order) {
         DeepReplicate::for($order)->copy('items')->usingLoaded('items')->filter('items', function () {
         })->replicate();
     });

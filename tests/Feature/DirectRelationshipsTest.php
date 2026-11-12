@@ -54,7 +54,7 @@ test('reuse of child relations is rejected before any write', function () {
     ];
 
     foreach ($cases as $path => [$model, $type]) {
-        $exception = $this->assertThrows(UnsupportedReuseException::class, function () use ($model, $path) {
+        $exception = $this->assertThrown(UnsupportedReuseException::class, function () use ($model, $path) {
             DeepReplicate::for($model)->reuse($path)->replicate();
         });
 
@@ -273,7 +273,7 @@ test('through and custom relations are rejected but may be skipped', function ()
 
     foreach (['itemProducts' => 'HasManyThrough', 'firstItemProduct' => 'HasOneThrough', 'custom' => 'CustomRelation'] as $path => $type) {
         foreach (['copy', 'reuse'] as $strategy) {
-            $exception = $this->assertThrows(UnsupportedRelationshipException::class, function () use ($order, $strategy, $path) {
+            $exception = $this->assertThrown(UnsupportedRelationshipException::class, function () use ($order, $strategy, $path) {
                 DeepReplicate::for($order)->{$strategy}($path)->replicate();
             });
 

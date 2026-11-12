@@ -23,6 +23,9 @@ final class MorphToHandler implements RelationHandler
 {
     use PreservesReusedKeys;
 
+    /**
+     * @param  Relation<Model, Model, mixed>  $relation
+     */
     public function supports(Relation $relation): bool
     {
         return get_class($relation) === MorphTo::class;
@@ -38,20 +41,29 @@ final class MorphToHandler implements RelationHandler
         return false;
     }
 
+    /**
+     * @param  Relation<Model, Model, mixed>  $relation
+     */
     public function staticRelated(Relation $relation): ?Model
     {
         return null;
     }
 
+    /**
+     * @param  Relation<Model, Model, mixed>  $relation
+     */
     public function parentColumns(Relation $relation): array
     {
-        /** @var MorphTo $relation */
+        /** @var MorphTo<Model, Model> $relation */
         return [$relation->getForeignKeyName(), $relation->getMorphType()];
     }
 
+    /**
+     * @param  Relation<Model, Model, mixed>  $relation
+     */
     public function fetch(Relation $relation, array $parents, string $name, string $path, array $filters, bool $withoutGlobalScopes, Graph $graph): array
     {
-        /** @var MorphTo $relation */
+        /** @var MorphTo<Model, Model> $relation */
         $foreignKey = $relation->getForeignKeyName();
         $morphType = $relation->getMorphType();
         $connection = $graph->definition->source->getConnection();
@@ -128,9 +140,12 @@ final class MorphToHandler implements RelationHandler
         return $targets;
     }
 
+    /**
+     * @param  Relation<Model, Model, mixed>  $relation
+     */
     public function connect(Graph $graph, GraphNode $parent, GraphNode $target, Relation $relation, ?Model $pivot, string $path): void
     {
-        /** @var MorphTo $relation */
+        /** @var MorphTo<Model, Model> $relation */
         $ownerKey = $relation->getOwnerKeyName() ?: $target->source->getKeyName();
         $morphType = $relation->getMorphType();
 

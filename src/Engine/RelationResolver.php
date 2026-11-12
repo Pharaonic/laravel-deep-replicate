@@ -28,6 +28,9 @@ final class RelationResolver
     /** @var array<string, true> */
     private array $verified = [];
 
+    /**
+     * @return Relation<Model, Model, mixed>
+     */
     public function resolve(Model $model, string $name, string $path): Relation
     {
         $class = get_class($model);

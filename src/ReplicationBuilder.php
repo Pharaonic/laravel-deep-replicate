@@ -184,7 +184,7 @@ final class ReplicationBuilder
      * Constrain the query of one selected relation path. The callback receives
      * the relation, as an eager-loading constraint does.
      *
-     * @param  callable(\Illuminate\Database\Eloquent\Relations\Relation): mixed  $callback
+     * @param  callable(\Illuminate\Database\Eloquent\Relations\Relation<\Illuminate\Database\Eloquent\Model, \Illuminate\Database\Eloquent\Model, mixed>): mixed  $callback
      */
     public function filter(string $path, callable $callback): self
     {

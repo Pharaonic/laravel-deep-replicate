@@ -93,7 +93,7 @@ Products are copied with their variants; their tags stay shared, so only new piv
 
 - ===Model
 
-  ```php title="app/Article.php"
+  ```php title="app/Models/Article.php"
   class Article extends Model
   {
       use DeepReplicates;

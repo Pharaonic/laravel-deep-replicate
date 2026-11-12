@@ -2,28 +2,28 @@
 
 All notable changes to this project are documented here.
 
-## 10.0.0 - Unreleased
+## 10.0.0 - 2026-11-12
 
 ### Compatibility
 
 - Laravel 10.0+ on PHP 8.1, 8.2 and 8.3.
 - The same API and behavior as 9.0.0.
 
-## 9.0.0 - Unreleased
+## 9.0.0 - 2026-11-12
 
 ### Compatibility
 
 - Laravel 9.33+ on PHP 8.0, 8.1 and 8.2. 9.33 is the first 9.x release that requires a Carbon release working on PHP 8.2.
 - The same API and behavior as 8.0.0. Models using `HasUuids` or `HasUlids` (9.30+) get new unique ids automatically.
 
-## 8.0.0 - Unreleased
+## 8.0.0 - 2026-11-12
 
 ### Compatibility
 
 - Laravel 8.75+ on PHP 8.0 and 8.1.
 - The same API as 7.0.0. `afterCommit` inside a caller's transaction now waits for the outermost commit through `Connection::afterCommit()`, instead of throwing `AfterCommitUnavailableException`.
 
-## 7.0.0 - Unreleased
+## 7.0.0 - 2026-11-12
 
 ### Compatibility
 
@@ -31,7 +31,7 @@ All notable changes to this project are documented here.
 - The same API and behavior as 6.0.0, including `AfterCommitUnavailableException` for `afterCommit` inside a caller's transaction (Laravel 8 adds the native support).
 - The test suite runs on Pest.
 
-## 6.0.0 - Unreleased
+## 6.0.0 - 2026-11-12
 
 ### Added
 

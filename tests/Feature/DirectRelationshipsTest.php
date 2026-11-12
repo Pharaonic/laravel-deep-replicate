@@ -62,7 +62,7 @@ class DirectRelationshipsTest extends TestCase
         ];
 
         foreach ($cases as $path => [$model, $type]) {
-            $exception = $this->assertThrows(UnsupportedReuseException::class, function () use ($model, $path) {
+            $exception = $this->assertThrown(UnsupportedReuseException::class, function () use ($model, $path) {
                 DeepReplicate::for($model)->reuse($path)->replicate();
             });
 
@@ -298,7 +298,7 @@ class DirectRelationshipsTest extends TestCase
 
         foreach (['itemProducts' => 'HasManyThrough', 'firstItemProduct' => 'HasOneThrough', 'custom' => 'CustomRelation'] as $path => $type) {
             foreach (['copy', 'reuse'] as $strategy) {
-                $exception = $this->assertThrows(UnsupportedRelationshipException::class, function () use ($order, $strategy, $path) {
+                $exception = $this->assertThrown(UnsupportedRelationshipException::class, function () use ($order, $strategy, $path) {
                     DeepReplicate::for($order)->{$strategy}($path)->replicate();
                 });
 

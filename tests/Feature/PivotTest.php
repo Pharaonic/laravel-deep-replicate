@@ -85,7 +85,7 @@ class PivotTest extends TestCase
         foreach (['order_item_id', 'tag_id', 'id'] as $column) {
             $before = DB::table('order_item_tag')->count();
 
-            $exception = $this->assertThrows(ProtectedRelationshipAttributeException::class, function () use ($item, $column) {
+            $exception = $this->assertThrown(ProtectedRelationshipAttributeException::class, function () use ($item, $column) {
                 DeepReplicate::for($item)->reuse('plainTags')->transformPivot('plainTags', function (array $attributes) use ($column) {
                     $attributes[$column] = 1;
 
@@ -102,7 +102,7 @@ class PivotTest extends TestCase
     {
         $post = $this->seedBlog()['post'];
 
-        $this->assertThrows(ProtectedRelationshipAttributeException::class, function () use ($post) {
+        $this->assertThrown(ProtectedRelationshipAttributeException::class, function () use ($post) {
             DeepReplicate::for($post)->reuse('tags')->transformPivot('tags', function (array $attributes) {
                 $attributes['taggable_type'] = 'other';
 
@@ -134,7 +134,7 @@ class PivotTest extends TestCase
         DB::table('order_tag_unique')->insert(['order_id' => $order->id, 'tag_id' => $red->id, 'code' => 'C-1']);
         $before = $this->counts();
 
-        $this->assertThrows(QueryException::class, function () use ($order) {
+        $this->assertThrown(QueryException::class, function () use ($order) {
             DeepReplicate::for($order)->copy('items')->reuse('uniqueTags')->replicate();
         });
         $this->assertSame($before, $this->counts());
@@ -172,7 +172,7 @@ class PivotTest extends TestCase
         $before = $this->counts();
 
         $writes = $this->captureWrites(function () use ($order) {
-            $this->assertThrows(ReplicationLimitExceededException::class, function () use ($order) {
+            $this->assertThrown(ReplicationLimitExceededException::class, function () use ($order) {
                 DeepReplicate::for($order)->copy('items')->reuse('items.plainTags')->maxPivotRows(2)->replicate();
             });
         });

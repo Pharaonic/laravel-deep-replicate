@@ -46,7 +46,7 @@ class TransactionsAndEventsTest extends TestCase
             }
         });
 
-        $exception = $this->assertThrows(RuntimeException::class, function () use ($order) {
+        $exception = $this->assertThrown(RuntimeException::class, function () use ($order) {
             DeepReplicate::for($order)->copy('items.options', 'items.plainTags')->replicate();
         });
 
@@ -59,7 +59,7 @@ class TransactionsAndEventsTest extends TestCase
         $order = $this->seedOrder();
         $before = $this->counts();
 
-        $this->assertThrows(RuntimeException::class, function () use ($order) {
+        $this->assertThrown(RuntimeException::class, function () use ($order) {
             DeepReplicate::for($order)->copy('items')->reuse('items.plainTags')->transformPivot('items.plainTags', function () {
                 throw new RuntimeException('pivot fails');
             })->replicate();
@@ -77,7 +77,7 @@ class TransactionsAndEventsTest extends TestCase
             return false;
         });
 
-        $exception = $this->assertThrows(ReplicationCancelledException::class, function () use ($order) {
+        $exception = $this->assertThrown(ReplicationCancelledException::class, function () use ($order) {
             DeepReplicate::for($order)->copy('items')->replicate();
         });
 
@@ -197,7 +197,7 @@ class TransactionsAndEventsTest extends TestCase
         foreach (['beforeReplicate', 'beforeModel', 'afterModel', 'afterReplicate'] as $hook) {
             $committed = false;
 
-            $this->assertThrows(RuntimeException::class, function () use ($order, $hook, &$committed) {
+            $this->assertThrown(RuntimeException::class, function () use ($order, $hook, &$committed) {
                 DeepReplicate::for($order)->copy('items')->{$hook}(function () use ($hook) {
                     throw new RuntimeException($hook);
                 })->afterCommit(function () use (&$committed) {
@@ -214,7 +214,7 @@ class TransactionsAndEventsTest extends TestCase
     {
         $order = $this->seedOrder();
 
-        $this->assertThrows(RuntimeException::class, function () use ($order) {
+        $this->assertThrown(RuntimeException::class, function () use ($order) {
             DeepReplicate::for($order)->copy('items')->afterCommit(function () {
                 throw new RuntimeException('after commit');
             })->replicate();
@@ -274,7 +274,7 @@ class TransactionsAndEventsTest extends TestCase
             $order = $this->seedOrder();
 
             DB::beginTransaction();
-            $this->assertThrows(AfterCommitUnavailableException::class, function () use ($order) {
+            $this->assertThrown(AfterCommitUnavailableException::class, function () use ($order) {
                 DeepReplicate::for($order)->copy('items')->afterCommit(function () {
                 })->replicate();
             });
@@ -303,7 +303,7 @@ class TransactionsAndEventsTest extends TestCase
         $order = $this->seedOrder();
         $before = $this->counts();
 
-        $exception = $this->assertThrows(CrossConnectionReplicationException::class, function () use ($order) {
+        $exception = $this->assertThrown(CrossConnectionReplicationException::class, function () use ($order) {
             DeepReplicate::for($order)->copy('items', 'notes')->replicate();
         });
 
@@ -341,7 +341,7 @@ class TransactionsAndEventsTest extends TestCase
         $order = $this->seedOrder();
         $before = $this->counts();
 
-        $this->assertThrows(RuntimeException::class, function () use ($order) {
+        $this->assertThrown(RuntimeException::class, function () use ($order) {
             DeepReplicate::for($order)->copy('items')->afterReplicate(function (ReplicationResult $result) {
                 $this->assertTrue(Order::query()->whereKey($result->model()->getKey())->exists());
 

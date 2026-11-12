@@ -79,23 +79,23 @@ class ContractExamplesTest extends TestCase
         $user = $this->seedBlog()['author'];
         $before = $this->counts();
 
-        $this->assertThrows(\ArgumentCountError::class, function () use ($order) {
+        $this->assertThrown(\ArgumentCountError::class, function () use ($order) {
             // @phpstan-ignore-next-line
             $order->deepReplicate();
         });
-        $this->assertThrows(EmptyRelationshipSelectionException::class, function () use ($order) {
+        $this->assertThrown(EmptyRelationshipSelectionException::class, function () use ($order) {
             $order->deepReplicate([]);
         });
-        $this->assertThrows(EmptyRelationshipSelectionException::class, function () use ($order) {
+        $this->assertThrown(EmptyRelationshipSelectionException::class, function () use ($order) {
             DeepReplicate::for($order)->replicate();
         });
-        $this->assertThrows(UnsupportedReuseException::class, function () use ($user) {
+        $this->assertThrown(UnsupportedReuseException::class, function () use ($user) {
             DeepReplicate::for($user)->reuse('posts')->replicate();
         });
-        $this->assertThrows(ConflictingRelationshipRuleException::class, function () use ($order) {
+        $this->assertThrown(ConflictingRelationshipRuleException::class, function () use ($order) {
             DeepReplicate::for($order)->copy('items')->reuse('items')->replicate();
         });
-        $this->assertThrows(IncompatibleRelationOptionsException::class, function () use ($order) {
+        $this->assertThrown(IncompatibleRelationOptionsException::class, function () use ($order) {
             DeepReplicate::for($order)->skip('items')->copy('items.options')->replicate();
         });
 

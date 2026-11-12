@@ -48,9 +48,7 @@ function dependencyNodes(int $count): array
     $nodes = [];
 
     for ($i = 0; $i < $count; $i++) {
-        $nodes[] = new GraphNode('n'.$i, new class extends Model
-        {
-        }, Strategy::COPY, $i, 0, '');
+        $nodes[] = new GraphNode('n'.$i, new class extends Model {}, Strategy::COPY, $i, 0, '');
     }
 
     return $nodes;

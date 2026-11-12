@@ -35,21 +35,17 @@ test('a generator is registered once per attribute', function () {
 });
 
 test('same as compares values and callbacks by identity', function () {
-    $callback = function () {
-    };
+    $callback = function () {};
 
     expect((new RelationRule)->with(['a' => 1])->generate('b', $callback)->sameAs((new RelationRule)->with(['a' => 1])->generate('b', $callback)))->toBeTrue();
-    expect((new RelationRule)->generate('b', $callback)->sameAs((new RelationRule)->generate('b', function () {
-    })))->toBeFalse();
+    expect((new RelationRule)->generate('b', $callback)->sameAs((new RelationRule)->generate('b', function () {})))->toBeFalse();
     expect((new RelationRule)->with(['a' => 1])->sameAs((new RelationRule)->with(['a' => 2])))->toBeFalse();
     expect((new RelationRule)->exclude(['a'])->sameAs(new RelationRule))->toBeFalse();
 });
 
 test('over gives the rule precedence per setting', function () {
-    $defaultTransform = function () {
-    };
-    $builderTransform = function () {
-    };
+    $defaultTransform = function () {};
+    $builderTransform = function () {};
     $defaults = (new RelationRule)->exclude(['d'])->with(['a' => 'default', 'b' => 'default'])->transform($defaultTransform)->withoutEvents();
     $builder = (new RelationRule)->with(['a' => 'builder'])->transform($builderTransform)->preserveTimestamps();
 

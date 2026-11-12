@@ -113,8 +113,7 @@ test('filter and using loaded on one path are incompatible', function () {
     $order = $this->seedOrder()->load('items');
 
     $this->assertThrown(IncompatibleRelationOptionsException::class, function () use ($order) {
-        DeepReplicate::for($order)->copy('items')->usingLoaded('items')->filter('items', function () {
-        })->replicate();
+        DeepReplicate::for($order)->copy('items')->usingLoaded('items')->filter('items', function () {})->replicate();
     });
 
     expect(Order::count())->toBe(1);

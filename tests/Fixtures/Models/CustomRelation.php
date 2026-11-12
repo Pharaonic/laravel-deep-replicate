@@ -7,13 +7,9 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 
 class CustomRelation extends Relation
 {
-    public function addConstraints()
-    {
-    }
+    public function addConstraints() {}
 
-    public function addEagerConstraints(array $models)
-    {
-    }
+    public function addEagerConstraints(array $models) {}
 
     public function initRelation(array $models, $relation)
     {

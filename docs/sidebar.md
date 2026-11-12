@@ -1,0 +1,21 @@
+- Getting Started
+  - [Overview](#overview)
+  - [Installation](#installation)
+  - [Compatibility](#compatibility)
+- Usage
+  - [Basic Usage](#basic-usage)
+  - [Relationships](#relationships)
+  - [Nested Graphs](#nested-graphs)
+  - [Pivots](#pivots)
+  - [Attributes](#attributes)
+  - [Loaded and Fresh Relations](#loaded-and-fresh)
+  - [Lifecycle](#lifecycle)
+  - [Transactions and Safety](#transactions-and-safety)
+  - [Dry Run and Results](#dry-run-and-results)
+- API Reference
+  - [API Reference](#api-reference)
+- Examples
+  - [Use Cases](#examples)
+  - [Troubleshooting](#troubleshooting)
+- Community
+  - [Contributors](#contributors)

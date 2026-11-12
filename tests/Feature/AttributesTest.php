@@ -30,7 +30,7 @@ class AttributesTest extends TestCase
         Page::create(['uuid' => 'page-2', 'document_uuid' => 'doc-1', 'number' => 2]);
         $before = $this->counts();
 
-        $exception = $this->assertThrows(MissingPrimaryKeyGeneratorException::class, function () use ($document) {
+        $exception = $this->assertThrown(MissingPrimaryKeyGeneratorException::class, function () use ($document) {
             DeepReplicate::for($document)->copy('pages')->replicate();
         });
         $this->assertStringContainsString('[uuid]', $exception->getMessage());
@@ -75,13 +75,13 @@ class AttributesTest extends TestCase
     {
         $order = $this->seedOrder();
 
-        $this->assertThrows(ProtectedRelationshipAttributeException::class, function () use ($order) {
+        $this->assertThrown(ProtectedRelationshipAttributeException::class, function () use ($order) {
             DeepReplicate::for($order)->copy('items')->generate('id', function () {
                 return 999;
             })->replicate();
         });
 
-        $this->assertThrows(ProtectedRelationshipAttributeException::class, function () use ($order) {
+        $this->assertThrown(ProtectedRelationshipAttributeException::class, function () use ($order) {
             DeepReplicate::for($order)->copy('items')->transform(function (array $attributes) {
                 $attributes['id'] = 999;
 
@@ -226,12 +226,12 @@ class AttributesTest extends TestCase
         $order->items()->orderBy('id')->firstOrFail()->update(['sku' => 'SKU-1']);
         $before = $this->counts();
 
-        $this->assertThrows(QueryException::class, function () use ($order) {
+        $this->assertThrown(QueryException::class, function () use ($order) {
             DeepReplicate::for($order)->copy('items')->replicate();
         });
         $this->assertSame($before, $this->counts());
 
-        $this->assertThrows(QueryException::class, function () use ($order) {
+        $this->assertThrown(QueryException::class, function () use ($order) {
             DeepReplicate::for($order)->copy('items')->generate('slug', function () {
                 return 'order-a-101';
             })->replicate();
@@ -397,7 +397,7 @@ class AttributesTest extends TestCase
         ];
 
         foreach ($cases as $name => $case) {
-            $exception = $this->assertThrows(ProtectedRelationshipAttributeException::class, $case);
+            $exception = $this->assertThrown(ProtectedRelationshipAttributeException::class, $case);
             $this->assertMatchesRegularExpression('/\[(customer_id|order_id)\]/', $exception->getMessage(), $name);
         }
 
@@ -433,7 +433,7 @@ class AttributesTest extends TestCase
     {
         $order = $this->seedOrder();
 
-        $this->assertThrows(CrossConnectionReplicationException::class, function () use ($order) {
+        $this->assertThrown(CrossConnectionReplicationException::class, function () use ($order) {
             DeepReplicate::for($order)->copy('items')->beforeModel(function (Model $original, Model $copy) {
                 $copy->setConnection('secondary');
             })->replicate();
@@ -446,7 +446,7 @@ class AttributesTest extends TestCase
     {
         $order = $this->seedOrder();
 
-        $this->assertThrows(\UnexpectedValueException::class, function () use ($order) {
+        $this->assertThrown(\UnexpectedValueException::class, function () use ($order) {
             DeepReplicate::for($order)->copy('items')->transform(function () {
                 return 'nope';
             })->replicate();

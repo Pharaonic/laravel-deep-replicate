@@ -111,7 +111,7 @@ class NestedGraphTest extends TestCase
         $order = $this->seedOrder();
         $before = $this->counts();
 
-        $exception = $this->assertThrows(ConflictingIdentityStrategyException::class, function () use ($order) {
+        $exception = $this->assertThrown(ConflictingIdentityStrategyException::class, function () use ($order) {
             DeepReplicate::for($order)->copy('items.product')->reuse('activeItems.product')->replicate();
         });
 
@@ -126,7 +126,7 @@ class NestedGraphTest extends TestCase
         $order = $this->seedOrder();
         $before = $this->counts();
 
-        $this->assertThrows(ConflictingNodeConfigurationException::class, function () use ($order) {
+        $this->assertThrown(ConflictingNodeConfigurationException::class, function () use ($order) {
             DeepReplicate::for($order)
                 ->copy('items', 'activeItems')
                 ->configure('items', function (RelationRule $rule) {
@@ -185,7 +185,7 @@ class NestedGraphTest extends TestCase
         StrictTeam::query()->insert(['id' => 1, 'owner_id' => 1, 'name' => 'Core']);
         $before = $this->counts();
 
-        $exception = $this->assertThrows(UnresolvableForeignKeyCycleException::class, function () {
+        $exception = $this->assertThrown(UnresolvableForeignKeyCycleException::class, function () {
             DeepReplicate::for(StrictUser::findOrFail(1))->copy('team', 'team.owner')->replicate();
         });
 
@@ -201,7 +201,7 @@ class NestedGraphTest extends TestCase
         $videoActivity = Activity::create(['subject_id' => $blog['video']->id, 'subject_type' => get_class($blog['video']), 'description' => 'uploaded']);
         $before = $this->counts();
 
-        $exception = $this->assertThrows(InvalidRelationshipPathException::class, function () use ($videoActivity) {
+        $exception = $this->assertThrown(InvalidRelationshipPathException::class, function () use ($videoActivity) {
             DeepReplicate::for($videoActivity)->copy('subject', 'subject.comments')->replicate();
         });
 
@@ -220,7 +220,7 @@ class NestedGraphTest extends TestCase
     {
         $activity = Activity::create(['subject_id' => 1, 'subject_type' => 'missing-type', 'description' => 'broken']);
 
-        $exception = $this->assertThrows(InvalidRelationshipPathException::class, function () use ($activity) {
+        $exception = $this->assertThrown(InvalidRelationshipPathException::class, function () use ($activity) {
             DeepReplicate::for($activity)->copy('subject')->replicate();
         });
 

@@ -224,13 +224,13 @@ class BuilderValidationTest extends TestCase
             }
         }
 
-        $this->assertThrows(InvalidRelationshipPathException::class, function () use ($order) {
+        $this->assertThrown(InvalidRelationshipPathException::class, function () use ($order) {
             DeepReplicate::for($order, [123]);
         });
 
         foreach (['clone', '', null, 1, true, ['copy'], function () {
         }] as $strategy) {
-            $this->assertThrows(InvalidRelationshipStrategyException::class, function () use ($order, $strategy) {
+            $this->assertThrown(InvalidRelationshipStrategyException::class, function () use ($order, $strategy) {
                 DeepReplicate::for($order, ['items' => $strategy]);
             });
         }
@@ -291,33 +291,33 @@ class BuilderValidationTest extends TestCase
         $noop = function () {
         };
 
-        $this->assertThrows(InvalidRelationshipPathException::class, function () use ($order, $noop) {
+        $this->assertThrown(InvalidRelationshipPathException::class, function () use ($order, $noop) {
             DeepReplicate::for($order)->copy('items')->filter('payments', $noop)->dryRun();
         });
 
-        $this->assertThrows(InvalidRelationshipPathException::class, function () use ($order) {
+        $this->assertThrown(InvalidRelationshipPathException::class, function () use ($order) {
             DeepReplicate::for($order)->copy('items')->usingLoaded('payments')->dryRun();
         });
 
-        $this->assertThrows(IncompatibleRelationOptionsException::class, function () use ($order) {
+        $this->assertThrown(IncompatibleRelationOptionsException::class, function () use ($order) {
             DeepReplicate::for($order)->copy('items')->reuse('customer')->configure('customer', function ($rule) {
                 $rule->exclude(['name']);
             })->dryRun();
         });
 
-        $this->assertThrows(IncompatibleRelationOptionsException::class, function () use ($order, $noop) {
+        $this->assertThrown(IncompatibleRelationOptionsException::class, function () use ($order, $noop) {
             DeepReplicate::for($order)->copy('items')->skip('payments')->filter('payments', $noop)->dryRun();
         });
 
-        $this->assertThrows(IncompatibleRelationOptionsException::class, function () use ($order, $noop) {
+        $this->assertThrown(IncompatibleRelationOptionsException::class, function () use ($order, $noop) {
             DeepReplicate::for($order)->copy('items')->filter('items', $noop)->usingLoaded('items')->dryRun();
         });
 
-        $this->assertThrows(IncompatibleRelationOptionsException::class, function () use ($order) {
+        $this->assertThrown(IncompatibleRelationOptionsException::class, function () use ($order) {
             DeepReplicate::for($order)->copy('items')->copyPivot('items')->dryRun();
         });
 
-        $this->assertThrows(IncompatibleRelationOptionsException::class, function () use ($order) {
+        $this->assertThrown(IncompatibleRelationOptionsException::class, function () use ($order) {
             DeepReplicate::for($order)->copy('items')->transformPivot('items', function (array $attributes) {
                 return $attributes;
             })->dryRun();
@@ -330,7 +330,7 @@ class BuilderValidationTest extends TestCase
 
         foreach (['maxDepth', 'maxModels', 'maxPivotRows', 'chunk'] as $method) {
             foreach ([0, -1] as $value) {
-                $this->assertThrows(InvalidArgumentException::class, function () use ($builder, $method, $value) {
+                $this->assertThrown(InvalidArgumentException::class, function () use ($builder, $method, $value) {
                     $builder->{$method}($value);
                 });
             }
@@ -348,10 +348,10 @@ class BuilderValidationTest extends TestCase
         $builder->dryRun();
         $builder->replicate();
 
-        $this->assertThrows(BuilderAlreadyExecutedException::class, function () use ($builder) {
+        $this->assertThrown(BuilderAlreadyExecutedException::class, function () use ($builder) {
             $builder->replicate();
         });
-        $this->assertThrows(BuilderAlreadyExecutedException::class, function () use ($builder) {
+        $this->assertThrown(BuilderAlreadyExecutedException::class, function () use ($builder) {
             $builder->dryRun();
         });
 
@@ -359,10 +359,10 @@ class BuilderValidationTest extends TestCase
             throw new \RuntimeException('stop');
         });
 
-        $this->assertThrows(\RuntimeException::class, function () use ($failing) {
+        $this->assertThrown(\RuntimeException::class, function () use ($failing) {
             $failing->replicate();
         });
-        $this->assertThrows(BuilderAlreadyExecutedException::class, function () use ($failing) {
+        $this->assertThrown(BuilderAlreadyExecutedException::class, function () use ($failing) {
             $failing->replicate();
         });
 
@@ -384,7 +384,7 @@ class BuilderValidationTest extends TestCase
 
     public function test_an_unsaved_source_is_rejected(): void
     {
-        $this->assertThrows(UnsavedSourceModelException::class, function () {
+        $this->assertThrown(UnsavedSourceModelException::class, function () {
             DeepReplicate::for(new Order(['number' => 'x']))->copy('items')->replicate();
         });
 
@@ -433,12 +433,12 @@ class BuilderValidationTest extends TestCase
         $this->assertSame('Alice', $result->model()->customer->name);
 
         Order::$defaults = ['paths' => ['items' => ['strategy' => 'reuse']]];
-        $this->assertThrows(InvalidArgumentException::class, function () use ($order) {
+        $this->assertThrown(InvalidArgumentException::class, function () use ($order) {
             $order->deepReplicate('items')->dryRun();
         });
 
         Order::$defaults = ['relations' => ['items']];
-        $this->assertThrows(InvalidArgumentException::class, function () use ($order) {
+        $this->assertThrown(InvalidArgumentException::class, function () use ($order) {
             $order->deepReplicate('customer')->dryRun();
         });
     }

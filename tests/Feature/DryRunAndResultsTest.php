@@ -164,7 +164,7 @@ class DryRunAndResultsTest extends TestCase
             $queries++;
         });
 
-        $exception = $this->assertThrows(ReplicationLimitExceededException::class, function () use ($order) {
+        $exception = $this->assertThrown(ReplicationLimitExceededException::class, function () use ($order) {
             DeepReplicate::for($order)->copy('items.options')->maxDepth(1)->replicate();
         });
 
@@ -180,7 +180,7 @@ class DryRunAndResultsTest extends TestCase
         $before = $this->counts();
 
         $writes = $this->captureWrites(function () use ($order) {
-            $this->assertThrows(ReplicationLimitExceededException::class, function () use ($order) {
+            $this->assertThrown(ReplicationLimitExceededException::class, function () use ($order) {
                 DeepReplicate::for($order)->copy('items')->reuse('customer')->maxModels(3)->replicate();
             });
         });

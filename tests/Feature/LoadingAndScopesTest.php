@@ -34,7 +34,7 @@ class LoadingAndScopesTest extends TestCase
         $post = $this->seedBlog()['post'];
         $before = $this->counts();
 
-        $exception = $this->assertThrows(MissingLoadedRelationException::class, function () use ($post) {
+        $exception = $this->assertThrown(MissingLoadedRelationException::class, function () use ($post) {
             DeepReplicate::for($post)->copy('comments')->usingLoaded('comments')->replicate();
         });
 
@@ -50,11 +50,11 @@ class LoadingAndScopesTest extends TestCase
         $order->load('items');
         $order->items->first()->load('options');
 
-        $this->assertThrows(MissingLoadedRelationException::class, function () use ($order) {
+        $this->assertThrown(MissingLoadedRelationException::class, function () use ($order) {
             DeepReplicate::for($order)->copy('items.options')->usingLoaded('items', 'items.options')->replicate();
         });
 
-        $this->assertThrows(MissingLoadedRelationException::class, function () use ($order) {
+        $this->assertThrown(MissingLoadedRelationException::class, function () use ($order) {
             // Fresh items never carry loaded options.
             DeepReplicate::for($order)->copy('items.options')->usingLoaded('items.options')->replicate();
         });
@@ -124,7 +124,7 @@ class LoadingAndScopesTest extends TestCase
     {
         $order = $this->seedOrder()->load('items');
 
-        $this->assertThrows(IncompatibleRelationOptionsException::class, function () use ($order) {
+        $this->assertThrown(IncompatibleRelationOptionsException::class, function () use ($order) {
             DeepReplicate::for($order)->copy('items')->usingLoaded('items')->filter('items', function () {
             })->replicate();
         });

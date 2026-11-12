@@ -35,6 +35,9 @@ final class BelongsToManyHandler implements RelationHandler
     /** @var array<string, PivotTarget> */
     private array $targets = [];
 
+    /**
+     * @param  Relation<Model, Model, mixed>  $relation
+     */
     public function supports(Relation $relation): bool
     {
         return in_array(get_class($relation), [BelongsToMany::class, MorphToMany::class], true);
@@ -50,31 +53,41 @@ final class BelongsToManyHandler implements RelationHandler
         return true;
     }
 
+    /**
+     * @param  Relation<Model, Model, mixed>  $relation
+     */
     public function staticRelated(Relation $relation): Model
     {
         return $relation->getRelated();
     }
 
+    /**
+     * @param  Relation<Model, Model, mixed>  $relation
+     */
     public function parentColumns(Relation $relation): array
     {
         return [];
     }
 
+    /**
+     * @param  Relation<Model, Model, mixed>  $relation
+     */
     public function fetch(Relation $relation, array $parents, string $name, string $path, array $filters, bool $withoutGlobalScopes, Graph $graph): array
     {
-        /** @var BelongsToMany $relation */
-        $declared = array_values(array_filter($relation->getPivotColumns(), 'is_string'));
+        /** @var BelongsToMany<Model, Model> $pivoted */
+        $pivoted = $relation;
+        $declared = array_values(array_filter($pivoted->getPivotColumns(), 'is_string'));
         $extra = array_values(array_diff(
-            $this->tableColumns($relation),
+            $this->tableColumns($pivoted),
             $declared,
-            [$relation->getForeignPivotKeyName(), $relation->getRelatedPivotKeyName()]
+            [$pivoted->getForeignPivotKeyName(), $pivoted->getRelatedPivotKeyName()]
         ));
 
         if ($extra !== []) {
-            $relation->withPivot($extra);
+            $pivoted->withPivot($extra);
         }
 
-        $accessor = $relation->getPivotAccessor();
+        $accessor = $pivoted->getPivotAccessor();
 
         return $this->eager($relation, $parents, $name, $filters, $withoutGlobalScopes, static function (Model $target) use ($accessor): ?Model {
             $pivot = $target->relationLoaded($accessor) ? $target->getRelation($accessor) : null;
@@ -86,6 +99,7 @@ final class BelongsToManyHandler implements RelationHandler
     /**
      * Columns of the pivot table that a loaded pivot does not carry.
      *
+     * @param  BelongsToMany<Model, Model>  $relation
      * @return list<string>
      */
     public function missingColumns(BelongsToMany $relation, Model $pivot): array
@@ -95,21 +109,41 @@ final class BelongsToManyHandler implements RelationHandler
         return array_values(array_diff($this->tableColumns($relation), array_keys($pivot->getAttributes()), $target->managedColumns()));
     }
 
+    /**
+     * @param  Relation<Model, Model, mixed>  $relation
+     */
     public function connect(Graph $graph, GraphNode $parent, GraphNode $target, Relation $relation, ?Model $pivot, string $path): void
     {
-        /** @var BelongsToMany $relation */
+        /** @var BelongsToMany<Model, Model> $relation */
         $description = $this->target($relation, $path);
-        $attributes = [];
-
-        foreach ($pivot === null ? [] : $pivot->getAttributes() as $column => $value) {
-            if (is_string($column) && ! in_array($column, $description->managedColumns(), true)) {
-                $attributes[$column] = $value;
-            }
-        }
+        $attributes = $this->copiedAttributes($pivot === null ? [] : $pivot->getAttributes(), $description->managedColumns());
 
         $graph->addPivot(new PivotLink($description, $parent, $target, $attributes, $pivot));
     }
 
+    /**
+     * The pivot attributes a new pivot row takes over: every column except the managed ones.
+     *
+     * @param  array<mixed>  $values
+     * @param  list<string>  $managed
+     * @return array<string, mixed>
+     */
+    private function copiedAttributes(array $values, array $managed): array
+    {
+        $attributes = [];
+
+        foreach ($values as $column => $value) {
+            if (is_string($column) && ! in_array($column, $managed, true)) {
+                $attributes[$column] = $value;
+            }
+        }
+
+        return $attributes;
+    }
+
+    /**
+     * @param  BelongsToMany<Model, Model>  $relation
+     */
     public function target(BelongsToMany $relation, string $path): PivotTarget
     {
         $key = $path.'|'.get_class($relation->getParent()).'|'.$relation->getTable();
@@ -147,6 +181,7 @@ final class BelongsToManyHandler implements RelationHandler
     }
 
     /**
+     * @param  BelongsToMany<Model, Model>  $relation
      * @return list<string>
      */
     private function tableColumns(BelongsToMany $relation): array

@@ -171,6 +171,7 @@ final class GraphPlanner
 
     /**
      * @param  list<Model>  $parents
+     * @param  Relation<Model, Model, mixed>  $template
      * @return list<list<array{0: Model, 1: Model|null}>>
      */
     private function loadedTargets(Graph $graph, RelationHandler $handler, Relation $template, array $parents, RuleNode $child): array
@@ -241,6 +242,9 @@ final class GraphPlanner
         }
     }
 
+    /**
+     * @param  Relation<Model, Model, mixed>  $relation
+     */
     private function handlerFor(Definition $definition, Relation $relation, string $class, RuleNode $child): ?RelationHandler
     {
         $handler = $this->handlers->for($relation);
@@ -268,16 +272,22 @@ final class GraphPlanner
         return $handler;
     }
 
+    /**
+     * @return Relation<Model, Model, mixed>
+     */
     private function template(Model $parent, RuleNode $child): Relation
     {
         $blank = $parent->newInstance();
 
-        $relation = Relation::noConstraints(function () use ($blank, $child): Relation {
-            return $this->resolver->resolve($blank, $child->name, $child->path);
+        // Captured by reference: the return type of noConstraints() differs between Laravel releases.
+        $relation = null;
+
+        Relation::noConstraints(function () use ($blank, $child, &$relation): void {
+            $relation = $this->resolver->resolve($blank, $child->name, $child->path);
         });
 
-        if (! $relation instanceof Relation) {
-            throw new LogicException('Relation::noConstraints() did not return the relation.');
+        if ($relation === null) {
+            throw new LogicException('Relation::noConstraints() did not run the callback.');
         }
 
         return $relation;

@@ -63,7 +63,7 @@ The counts are a snapshot. The data may change before `replicate()` runs. A buil
   $result->stats()->toArray();
   ```
 
-Identity keys read `{connection}|{class}|{key type}:{key}`, for example `mysql|App\Item|integer:42`. Reused originals are never listed as copies.
+Identity keys read `{connection}|{class}|{key type}:{key}`, for example `mysql|App\Models\Item|integer:42`. Reused originals are never listed as copies.
 
 | Stat | Meaning |
 | --- | --- |

@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented here.
 
+## 9.0.0 - Unreleased
+
+### Compatibility
+
+- Laravel 9.33+ on PHP 8.0, 8.1 and 8.2. 9.33 is the first 9.x release that requires a Carbon release working on PHP 8.2.
+- The same API and behavior as 8.0.0. Models using `HasUuids` or `HasUlids` (9.30+) get new unique ids automatically.
+
 ## 8.0.0 - Unreleased
 
 ### Compatibility

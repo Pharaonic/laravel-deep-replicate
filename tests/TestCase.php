@@ -253,7 +253,7 @@ abstract class TestCase extends Orchestra
      * @param  class-string<T>  $exception
      * @return T
      */
-    protected function assertThrows(string $exception, callable $callback): \Throwable
+    protected function assertThrown(string $exception, callable $callback): \Throwable
     {
         try {
             $callback();

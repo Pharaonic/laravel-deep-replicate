@@ -1,0 +1,95 @@
+{
+    "name": "pharaonic/laravel-deep-replicate",
+    "description": "Replicate a chosen Eloquent relationship graph into new persisted records, with explicit copy, reuse, and skip rules per relation path.",
+    "keywords": [
+        "laravel",
+        "eloquent",
+        "replicate",
+        "deep replicate",
+        "clone",
+        "duplicate",
+        "relationships",
+        "pharaonic"
+    ],
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Moamen Eltouny (Raggi)",
+            "email": "raggigroup@gmail.com"
+        }
+    ],
+    "support": {
+        "docs": "https://pharaonic.dev/packages/laravel/deep-replicate",
+        "issues": "https://github.com/Pharaonic/laravel-deep-replicate/issues",
+        "source": "https://github.com/Pharaonic/laravel-deep-replicate"
+    },
+    "require": {
+        "php": ">=8.0 <8.1",
+        "illuminate/container": "^6.20",
+        "illuminate/contracts": "^6.20",
+        "illuminate/database": "^6.20",
+        "illuminate/support": "^6.20"
+    },
+    "require-dev": {
+        "laravel/pint": "^1.5",
+        "orchestra/testbench": "^4.18",
+        "phpstan/phpstan": "^2.1",
+        "phpunit/phpunit": "^9.6.33"
+    },
+    "autoload": {
+        "psr-4": {
+            "Pharaonic\\Laravel\\DeepReplicate\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Pharaonic\\Laravel\\DeepReplicate\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Pharaonic\\Laravel\\DeepReplicate\\DeepReplicateServiceProvider"
+            ],
+            "aliases": {
+                "DeepReplicate": "Pharaonic\\Laravel\\DeepReplicate\\Facades\\DeepReplicate"
+            }
+        }
+    },
+    "scripts": {
+        "test": "@php vendor/bin/phpunit",
+        "analyse": "@php vendor/bin/phpstan analyse --memory-limit=1G",
+        "format": "@php vendor/bin/pint",
+        "format:check": "@php vendor/bin/pint --test",
+        "security": "@composer audit",
+        "check": [
+            "@composer validate --strict",
+            "@format:check",
+            "@analyse",
+            "@test",
+            "@security"
+        ]
+    },
+    "config": {
+        "audit": {
+            "abandoned": "report"
+        },
+        "policy": {
+            "advisories": {
+                "block": false,
+                "ignore": {
+                    "laravel/framework": "No fixed release within Laravel 6; the application chooses the framework release.",
+                    "league/commonmark": "No fixed release within Laravel 6; the application chooses the framework release.",
+                    "league/flysystem": "No fixed release within Laravel 6; the application chooses the framework release.",
+                    "symfony/http-foundation": "No fixed release within Laravel 6; the application chooses the framework release.",
+                    "symfony/http-kernel": "No fixed release within Laravel 6; the application chooses the framework release.",
+                    "symfony/process": "No fixed release within Laravel 6; the application chooses the framework release.",
+                    "symfony/routing": "No fixed release within Laravel 6; the application chooses the framework release."
+                }
+            }
+        },
+        "sort-packages": true
+    },
+    "prefer-stable": true
+}

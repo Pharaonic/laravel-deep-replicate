@@ -1,0 +1,7 @@
+parameters:
+    level: max
+    paths:
+        - src
+        # The trait is only analysed through a class that uses it.
+        - tests/Fixtures/Analysed
+    tmpDir: .phpstan-cache

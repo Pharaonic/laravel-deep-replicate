@@ -4,8 +4,8 @@ Install the package with Composer. Laravel discovers the service provider and th
 
 ### Requirements
 
-- PHP 8.2, 8.3, 8.4 or 8.5
-- Laravel 12.0 or newer within 12.x (`illuminate/database`, `illuminate/support`, `illuminate/container`, `illuminate/contracts`)
+- PHP 8.3, 8.4 or 8.5
+- Laravel 13.0 or newer within 13.x (`illuminate/database`, `illuminate/support`, `illuminate/container`, `illuminate/contracts`)
 
 Each Laravel major has its own release line with the same API. Pick the line that matches your application (see [Compatibility](#compatibility)).
 

@@ -11,8 +11,7 @@ Every Laravel major has its own release line with the same package API. Versions
 | 10.x | 8.1 to 8.3 | 10.0+ | Tested with lowest and highest dependencies on PHP 8.1, 8.2 and 8.3. |
 | 11.x | 8.2 to 8.4 | 11.0+ | Tested with lowest and highest dependencies on PHP 8.2, 8.3 and 8.4. |
 | 12.x | 8.2 to 8.5 | 12.0+ | Tested with lowest and highest dependencies on PHP 8.2 to 8.5. |
-
-The 13.x line is opened next, tested on every PHP version Laravel 13 supports.
+| 13.x | 8.3 to 8.5 | 13.0+ | Tested with lowest and highest dependencies on PHP 8.3, 8.4 and 8.5. |
 
 ### Version-specific behavior
 

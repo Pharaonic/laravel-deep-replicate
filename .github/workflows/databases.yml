@@ -1,0 +1,86 @@
+name: Databases
+
+on:
+  push:
+    branches:
+      - develop
+      - "[0-9]*.x"
+  pull_request:
+    branches:
+      - develop
+      - "[0-9]*.x"
+  workflow_dispatch:
+
+concurrency:
+  group: "databases-${{ github.workflow }}-${{ github.ref }}"
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+# Foreign keys, cycles and pivots behave differently per engine, so the
+# suite also runs on MySQL and PostgreSQL, on the line's lowest PHP.
+jobs:
+  database:
+    name: ${{ matrix.database }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        database:
+          - mysql
+          - pgsql
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: deep_replicate
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=5
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: deep_replicate
+        ports:
+          - 5432:5432
+        options: --health-cmd="pg_isready" --health-interval=10s --health-timeout=5s --health-retries=5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Read the lowest supported PHP
+        id: php
+        shell: bash
+        run: |
+          constraint="$(jq -r '.require.php' composer.json)"
+          [[ "$constraint" =~ ^\>=8\.([0-9]+)\ \<8\.([0-9]+)$ ]] || { echo "unexpected require.php: $constraint" >&2; exit 1; }
+          echo "lowest=8.${BASH_REMATCH[1]}" >> "$GITHUB_OUTPUT"
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ steps.php.outputs.lowest }}
+          extensions: pdo_mysql, pdo_pgsql
+          coverage: none
+          tools: composer:v2
+
+      - name: Install dependencies
+        uses: ramsey/composer-install@v4
+        with:
+          dependency-versions: highest
+
+      - name: Run tests
+        run: composer test
+        env:
+          DB_CONNECTION: ${{ matrix.database }}
+          DB_HOST: 127.0.0.1
+          DB_PORT: ${{ matrix.database == 'mysql' && '3306' || '5432' }}
+          DB_DATABASE: deep_replicate
+          DB_USERNAME: ${{ matrix.database == 'mysql' && 'root' || 'postgres' }}
+          DB_PASSWORD: ${{ matrix.database == 'mysql' && 'root' || 'postgres' }}

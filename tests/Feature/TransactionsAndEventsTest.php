@@ -38,7 +38,7 @@ test('a failing insert leaves no new records or pivots', function () {
         }
     });
 
-    $exception = $this->assertThrows(RuntimeException::class, function () use ($order) {
+    $exception = $this->assertThrown(RuntimeException::class, function () use ($order) {
         DeepReplicate::for($order)->copy('items.options', 'items.plainTags')->replicate();
     });
 
@@ -50,7 +50,7 @@ test('a failing pivot insert rolls back the copied models', function () {
     $order = $this->seedOrder();
     $before = $this->counts();
 
-    $this->assertThrows(RuntimeException::class, function () use ($order) {
+    $this->assertThrown(RuntimeException::class, function () use ($order) {
         DeepReplicate::for($order)->copy('items')->reuse('items.plainTags')->transformPivot('items.plainTags', function () {
             throw new RuntimeException('pivot fails');
         })->replicate();
@@ -67,7 +67,7 @@ test('a cancelling listener rolls back and reports the path', function () {
         return false;
     });
 
-    $exception = $this->assertThrows(ReplicationCancelledException::class, function () use ($order) {
+    $exception = $this->assertThrown(ReplicationCancelledException::class, function () use ($order) {
         DeepReplicate::for($order)->copy('items')->replicate();
     });
 
@@ -181,7 +181,7 @@ test('a failing pre commit callback rolls back', function () {
     foreach (['beforeReplicate', 'beforeModel', 'afterModel', 'afterReplicate'] as $hook) {
         $committed = false;
 
-        $this->assertThrows(RuntimeException::class, function () use ($order, $hook, &$committed) {
+        $this->assertThrown(RuntimeException::class, function () use ($order, $hook, &$committed) {
             DeepReplicate::for($order)->copy('items')->{$hook}(function () use ($hook) {
                 throw new RuntimeException($hook);
             })->afterCommit(function () use (&$committed) {
@@ -197,7 +197,7 @@ test('a failing pre commit callback rolls back', function () {
 test('an after commit failure cannot undo the commit', function () {
     $order = $this->seedOrder();
 
-    $this->assertThrows(RuntimeException::class, function () use ($order) {
+    $this->assertThrown(RuntimeException::class, function () use ($order) {
         DeepReplicate::for($order)->copy('items')->afterCommit(function () {
             throw new RuntimeException('after commit');
         })->replicate();
@@ -254,7 +254,7 @@ test('after commit is dropped when the outer transaction rolls back', function (
         $order = $this->seedOrder();
 
         DB::beginTransaction();
-        $this->assertThrows(AfterCommitUnavailableException::class, function () use ($order) {
+        $this->assertThrown(AfterCommitUnavailableException::class, function () use ($order) {
             DeepReplicate::for($order)->copy('items')->afterCommit(function () {
             })->replicate();
         });
@@ -282,7 +282,7 @@ test('a graph spanning connections is rejected before any write', function () {
     $order = $this->seedOrder();
     $before = $this->counts();
 
-    $exception = $this->assertThrows(CrossConnectionReplicationException::class, function () use ($order) {
+    $exception = $this->assertThrown(CrossConnectionReplicationException::class, function () use ($order) {
         DeepReplicate::for($order)->copy('items', 'notes')->replicate();
     });
 
@@ -317,7 +317,7 @@ test('records visible inside the transaction are rolled back on failure', functi
     $order = $this->seedOrder();
     $before = $this->counts();
 
-    $this->assertThrows(RuntimeException::class, function () use ($order) {
+    $this->assertThrown(RuntimeException::class, function () use ($order) {
         DeepReplicate::for($order)->copy('items')->afterReplicate(function (ReplicationResult $result) {
             expect(Order::query()->whereKey($result->model()->getKey())->exists())->toBeTrue();
 

@@ -24,7 +24,7 @@ test('string keys need an explicit generator', function () {
     Page::create(['uuid' => 'page-2', 'document_uuid' => 'doc-1', 'number' => 2]);
     $before = $this->counts();
 
-    $exception = $this->assertThrows(MissingPrimaryKeyGeneratorException::class, function () use ($document) {
+    $exception = $this->assertThrown(MissingPrimaryKeyGeneratorException::class, function () use ($document) {
         DeepReplicate::for($document)->copy('pages')->replicate();
     });
     expect($exception->getMessage())->toContain('[uuid]');
@@ -67,13 +67,13 @@ test('native unique ids are regenerated once per copy', function () {
 test('an incrementing primary key cannot be generated or transformed', function () {
     $order = $this->seedOrder();
 
-    $this->assertThrows(ProtectedRelationshipAttributeException::class, function () use ($order) {
+    $this->assertThrown(ProtectedRelationshipAttributeException::class, function () use ($order) {
         DeepReplicate::for($order)->copy('items')->generate('id', function () {
             return 999;
         })->replicate();
     });
 
-    $this->assertThrows(ProtectedRelationshipAttributeException::class, function () use ($order) {
+    $this->assertThrown(ProtectedRelationshipAttributeException::class, function () use ($order) {
         DeepReplicate::for($order)->copy('items')->transform(function (array $attributes) {
             $attributes['id'] = 999;
 
@@ -212,12 +212,12 @@ test('unique values fail with rollback unless generated', function () {
     $order->items()->orderBy('id')->firstOrFail()->update(['sku' => 'SKU-1']);
     $before = $this->counts();
 
-    $this->assertThrows(QueryException::class, function () use ($order) {
+    $this->assertThrown(QueryException::class, function () use ($order) {
         DeepReplicate::for($order)->copy('items')->replicate();
     });
     expect($this->counts())->toBe($before);
 
-    $this->assertThrows(QueryException::class, function () use ($order) {
+    $this->assertThrown(QueryException::class, function () use ($order) {
         DeepReplicate::for($order)->copy('items')->generate('slug', function () {
             return 'order-a-101';
         })->replicate();
@@ -377,7 +377,7 @@ test('managed linking attributes are protected', function () {
     ];
 
     foreach ($cases as $name => $case) {
-        $exception = $this->assertThrows(ProtectedRelationshipAttributeException::class, $case);
+        $exception = $this->assertThrown(ProtectedRelationshipAttributeException::class, $case);
         $this->assertMatchesRegularExpression('/\[(customer_id|order_id)\]/', $exception->getMessage(), $name);
     }
 
@@ -410,7 +410,7 @@ test('unmentioned root foreign keys may be changed deliberately', function () {
 test('before model cannot switch the connection', function () {
     $order = $this->seedOrder();
 
-    $this->assertThrows(CrossConnectionReplicationException::class, function () use ($order) {
+    $this->assertThrown(CrossConnectionReplicationException::class, function () use ($order) {
         DeepReplicate::for($order)->copy('items')->beforeModel(function (Model $original, Model $copy) {
             $copy->setConnection('secondary');
         })->replicate();
@@ -422,7 +422,7 @@ test('before model cannot switch the connection', function () {
 test('transform must return an attribute array', function () {
     $order = $this->seedOrder();
 
-    $this->assertThrows(\UnexpectedValueException::class, function () use ($order) {
+    $this->assertThrown(\UnexpectedValueException::class, function () use ($order) {
         DeepReplicate::for($order)->copy('items')->transform(function () {
             return 'nope';
         })->replicate();

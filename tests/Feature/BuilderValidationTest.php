@@ -206,13 +206,13 @@ test('invalid paths and strategies are rejected', function () {
         }
     }
 
-    $this->assertThrows(InvalidRelationshipPathException::class, function () use ($order) {
+    $this->assertThrown(InvalidRelationshipPathException::class, function () use ($order) {
         DeepReplicate::for($order, [123]);
     });
 
     foreach (['clone', '', null, 1, true, ['copy'], function () {
     }] as $strategy) {
-        $this->assertThrows(InvalidRelationshipStrategyException::class, function () use ($order, $strategy) {
+        $this->assertThrown(InvalidRelationshipStrategyException::class, function () use ($order, $strategy) {
             DeepReplicate::for($order, ['items' => $strategy]);
         });
     }
@@ -270,33 +270,33 @@ test('options must target selected paths with a compatible strategy', function (
     $noop = function () {
     };
 
-    $this->assertThrows(InvalidRelationshipPathException::class, function () use ($order, $noop) {
+    $this->assertThrown(InvalidRelationshipPathException::class, function () use ($order, $noop) {
         DeepReplicate::for($order)->copy('items')->filter('payments', $noop)->dryRun();
     });
 
-    $this->assertThrows(InvalidRelationshipPathException::class, function () use ($order) {
+    $this->assertThrown(InvalidRelationshipPathException::class, function () use ($order) {
         DeepReplicate::for($order)->copy('items')->usingLoaded('payments')->dryRun();
     });
 
-    $this->assertThrows(IncompatibleRelationOptionsException::class, function () use ($order) {
+    $this->assertThrown(IncompatibleRelationOptionsException::class, function () use ($order) {
         DeepReplicate::for($order)->copy('items')->reuse('customer')->configure('customer', function ($rule) {
             $rule->exclude(['name']);
         })->dryRun();
     });
 
-    $this->assertThrows(IncompatibleRelationOptionsException::class, function () use ($order, $noop) {
+    $this->assertThrown(IncompatibleRelationOptionsException::class, function () use ($order, $noop) {
         DeepReplicate::for($order)->copy('items')->skip('payments')->filter('payments', $noop)->dryRun();
     });
 
-    $this->assertThrows(IncompatibleRelationOptionsException::class, function () use ($order, $noop) {
+    $this->assertThrown(IncompatibleRelationOptionsException::class, function () use ($order, $noop) {
         DeepReplicate::for($order)->copy('items')->filter('items', $noop)->usingLoaded('items')->dryRun();
     });
 
-    $this->assertThrows(IncompatibleRelationOptionsException::class, function () use ($order) {
+    $this->assertThrown(IncompatibleRelationOptionsException::class, function () use ($order) {
         DeepReplicate::for($order)->copy('items')->copyPivot('items')->dryRun();
     });
 
-    $this->assertThrows(IncompatibleRelationOptionsException::class, function () use ($order) {
+    $this->assertThrown(IncompatibleRelationOptionsException::class, function () use ($order) {
         DeepReplicate::for($order)->copy('items')->transformPivot('items', function (array $attributes) {
             return $attributes;
         })->dryRun();
@@ -308,7 +308,7 @@ test('limits must be positive', function () {
 
     foreach (['maxDepth', 'maxModels', 'maxPivotRows', 'chunk'] as $method) {
         foreach ([0, -1] as $value) {
-            $this->assertThrows(InvalidArgumentException::class, function () use ($builder, $method, $value) {
+            $this->assertThrown(InvalidArgumentException::class, function () use ($builder, $method, $value) {
                 $builder->{$method}($value);
             });
         }
@@ -325,10 +325,10 @@ test('builders are single use', function () {
     $builder->dryRun();
     $builder->replicate();
 
-    $this->assertThrows(BuilderAlreadyExecutedException::class, function () use ($builder) {
+    $this->assertThrown(BuilderAlreadyExecutedException::class, function () use ($builder) {
         $builder->replicate();
     });
-    $this->assertThrows(BuilderAlreadyExecutedException::class, function () use ($builder) {
+    $this->assertThrown(BuilderAlreadyExecutedException::class, function () use ($builder) {
         $builder->dryRun();
     });
 
@@ -336,10 +336,10 @@ test('builders are single use', function () {
         throw new \RuntimeException('stop');
     });
 
-    $this->assertThrows(\RuntimeException::class, function () use ($failing) {
+    $this->assertThrown(\RuntimeException::class, function () use ($failing) {
         $failing->replicate();
     });
-    $this->assertThrows(BuilderAlreadyExecutedException::class, function () use ($failing) {
+    $this->assertThrown(BuilderAlreadyExecutedException::class, function () use ($failing) {
         $failing->replicate();
     });
 
@@ -359,7 +359,7 @@ test('builders do not share state', function () {
 });
 
 test('an unsaved source is rejected', function () {
-    $this->assertThrows(UnsavedSourceModelException::class, function () {
+    $this->assertThrown(UnsavedSourceModelException::class, function () {
         DeepReplicate::for(new Order(['number' => 'x']))->copy('items')->replicate();
     });
 
@@ -405,12 +405,12 @@ test('model defaults cannot select paths or change strategies', function () {
     expect($result->model()->customer->name)->toBe('Alice');
 
     Order::$defaults = ['paths' => ['items' => ['strategy' => 'reuse']]];
-    $this->assertThrows(InvalidArgumentException::class, function () use ($order) {
+    $this->assertThrown(InvalidArgumentException::class, function () use ($order) {
         $order->deepReplicate('items')->dryRun();
     });
 
     Order::$defaults = ['relations' => ['items']];
-    $this->assertThrows(InvalidArgumentException::class, function () use ($order) {
+    $this->assertThrown(InvalidArgumentException::class, function () use ($order) {
         $order->deepReplicate('customer')->dryRun();
     });
 });

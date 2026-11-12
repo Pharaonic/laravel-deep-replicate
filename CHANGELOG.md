@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented here.
 
+## 8.0.0 - Unreleased
+
+### Compatibility
+
+- Laravel 8.75+ on PHP 8.0 and 8.1.
+- The same API as 7.0.0. `afterCommit` inside a caller's transaction now waits for the outermost commit through `Connection::afterCommit()`, instead of throwing `AfterCommitUnavailableException`.
+
 ## 7.0.0 - Unreleased
 
 ### Compatibility

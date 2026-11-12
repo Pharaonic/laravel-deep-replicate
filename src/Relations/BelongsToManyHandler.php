@@ -122,6 +122,18 @@ final class BelongsToManyHandler implements RelationHandler
     }
 
     /**
+     * @return class-string<Pivot>
+     */
+    private function pivotClass(string $class, string $path): string
+    {
+        if (! is_a($class, Pivot::class, true)) {
+            throw new LogicException("The pivot class [{$class}] of path [{$path}] does not extend ".Pivot::class.'.');
+        }
+
+        return $class;
+    }
+
+    /**
      * The pivot attributes a new pivot row takes over: every column except the managed ones.
      *
      * @param  array<mixed>  $values
@@ -152,12 +164,7 @@ final class BelongsToManyHandler implements RelationHandler
             return $this->targets[$key];
         }
 
-        $pivotClass = $relation->getPivotClass();
-
-        if (! is_a($pivotClass, Pivot::class, true)) {
-            throw new LogicException("The pivot class [{$pivotClass}] of path [{$path}] does not extend ".Pivot::class.'.');
-        }
-
+        $pivotClass = $this->pivotClass($relation->getPivotClass(), $path);
         $pivot = new $pivotClass;
         $morph = $relation instanceof MorphToMany;
 

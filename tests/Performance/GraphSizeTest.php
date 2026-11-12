@@ -1,13 +1,10 @@
 <?php
 
-namespace Pharaonic\Laravel\DeepReplicate\Tests\Performance;
-
 use Illuminate\Support\Facades\DB;
 use Pharaonic\Laravel\DeepReplicate\Facades\DeepReplicate;
 use Pharaonic\Laravel\DeepReplicate\Tests\Fixtures\Models\Customer;
 use Pharaonic\Laravel\DeepReplicate\Tests\Fixtures\Models\Order;
 use Pharaonic\Laravel\DeepReplicate\Tests\Fixtures\Models\Tag;
-use Pharaonic\Laravel\DeepReplicate\Tests\TestCase;
 
 /**
  * Query and memory budgets for growing graphs: an order with N items, eight
@@ -15,115 +12,107 @@ use Pharaonic\Laravel\DeepReplicate\Tests\TestCase;
  *
  * Set DEEP_REPLICATE_BENCHMARK=10,100,1000,10000 to choose the sizes; the
  * measured numbers are written to STDERR.
+ *
+ * @return array<string, array{0: int}>
  */
-class GraphSizeTest extends TestCase
+function benchmarkSizes(): array
 {
-    /**
-     * @return array<string, array{0: int}>
-     */
-    public static function sizes(): array
-    {
-        $sizes = getenv('DEEP_REPLICATE_BENCHMARK') ?: '10,100,1000';
-        $cases = [];
+    $sizes = getenv('DEEP_REPLICATE_BENCHMARK') ?: '10,100,1000';
+    $cases = [];
 
-        foreach (array_filter(array_map('intval', explode(',', $sizes))) as $size) {
-            $cases["{$size} models"] = [$size];
-        }
-
-        return $cases;
+    foreach (array_filter(array_map('intval', explode(',', $sizes))) as $size) {
+        $cases["{$size} models"] = [$size];
     }
 
-    /**
-     * @dataProvider sizes
-     */
-    public function test_queries_stay_batched_as_the_graph_grows(int $size): void
-    {
-        $order = $this->seedGraph($size);
-        $items = intdiv($size - 1, 9);
-        $models = 1 + $items * 9;
-        $selects = 0;
-        $inserts = 0;
+    return $cases;
+}
 
-        DB::listen(function ($query) use (&$selects, &$inserts) {
-            if (stripos(ltrim($query->sql), 'select') === 0) {
-                $selects++;
-            } elseif (stripos(ltrim($query->sql), 'insert') === 0) {
-                $inserts++;
-            }
-        });
+test('queries stay batched as the graph grows', function (int $size) {
+    $order = seedBenchmarkGraph($size);
+    $items = intdiv($size - 1, 9);
+    $models = 1 + $items * 9;
+    $selects = 0;
+    $inserts = 0;
 
-        $memory = memory_get_usage();
-        $started = microtime(true);
+    DB::listen(function ($query) use (&$selects, &$inserts) {
+        if (stripos(ltrim($query->sql), 'select') === 0) {
+            $selects++;
+        } elseif (stripos(ltrim($query->sql), 'insert') === 0) {
+            $inserts++;
+        }
+    });
 
-        $result = DeepReplicate::for($order)
-            ->copy('items', 'items.options')
-            ->reuse('items.plainTags')
-            ->maxModels(max(10000, $models + 1))
-            ->replicate();
+    $memory = memory_get_usage();
+    $started = microtime(true);
 
-        $elapsed = (microtime(true) - $started) * 1000;
-        $peak = (memory_get_peak_usage() - $memory) / 1048576;
-        $chunks = (int) max(1, ceil($items / 500));
+    $result = DeepReplicate::for($order)
+        ->copy('items', 'items.options')
+        ->reuse('items.plainTags')
+        ->maxModels(max(10000, $models + 1))
+        ->replicate();
 
-        $this->assertSame($models, $result->stats()->copiedModels());
-        $this->assertSame($items, $result->stats()->pivotRowsCreated());
+    $elapsed = (microtime(true) - $started) * 1000;
+    $peak = (memory_get_peak_usage() - $memory) / 1048576;
+    $chunks = (int) max(1, ceil($items / 500));
 
-        // Items once, options and pivots once per chunk of 500 items, plus
-        // the pivot table's column listing: never one query per parent.
-        $this->assertLessThanOrEqual(1 + 2 * $chunks + 2, $selects);
-        // One insert per copied model and one per 500 pivot rows.
-        $this->assertSame($models + (int) ceil($items / 500), $inserts);
+    expect($result->stats()->copiedModels())->toBe($models);
+    expect($result->stats()->pivotRowsCreated())->toBe($items);
 
-        fwrite(STDERR, sprintf(
-            "\n[%s] %6d models: %5d selects, %6d inserts, %8.1f ms, %6.1f MB peak",
-            DB::connection()->getDriverName(),
-            $models,
-            $selects,
-            $inserts,
-            $elapsed,
-            max(0, $peak)
-        ));
-    }
+    // Items once, options and pivots once per chunk of 500 items, plus
+    // the pivot table's column listing: never one query per parent.
+    expect($selects)->toBeLessThanOrEqual(1 + 2 * $chunks + 2);
+    // One insert per copied model and one per 500 pivot rows.
+    expect($inserts)->toBe($models + (int) ceil($items / 500));
 
-    private function seedGraph(int $size): Order
-    {
-        $customer = Customer::create(['name' => 'Bulk']);
-        $tag = Tag::create(['name' => 'bulk']);
-        $order = new Order(['number' => 'bulk']);
-        $order->customer_id = $customer->id;
-        $order->save();
+    fwrite(STDERR, sprintf(
+        "\n[%s] %6d models: %5d selects, %6d inserts, %8.1f ms, %6.1f MB peak",
+        DB::connection()->getDriverName(),
+        $models,
+        $selects,
+        $inserts,
+        $elapsed,
+        max(0, $peak)
+    ));
+})->with(benchmarkSizes());
 
-        $items = intdiv($size - 1, 9);
-        $now = now()->toDateTimeString();
+function seedBenchmarkGraph(int $size): Order
+{
+    $customer = Customer::create(['name' => 'Bulk']);
+    $tag = Tag::create(['name' => 'bulk']);
+    $order = new Order(['number' => 'bulk']);
+    $order->customer_id = $customer->id;
+    $order->save();
 
-        for ($offset = 0; $offset < $items; $offset += 500) {
-            $rows = [];
+    $items = intdiv($size - 1, 9);
+    $now = now()->toDateTimeString();
 
-            for ($i = $offset; $i < min($items, $offset + 500); $i++) {
-                $rows[] = ['order_id' => $order->id, 'title' => "Item {$i}", 'created_at' => $now, 'updated_at' => $now];
-            }
+    for ($offset = 0; $offset < $items; $offset += 500) {
+        $rows = [];
 
-            DB::table('order_items')->insert($rows);
+        for ($i = $offset; $i < min($items, $offset + 500); $i++) {
+            $rows[] = ['order_id' => $order->id, 'title' => "Item {$i}", 'created_at' => $now, 'updated_at' => $now];
         }
 
-        $ids = DB::table('order_items')->where('order_id', $order->id)->pluck('id')->all();
+        DB::table('order_items')->insert($rows);
+    }
 
-        foreach (array_chunk($ids, 100) as $chunk) {
-            $options = [];
-            $pivots = [];
+    $ids = DB::table('order_items')->where('order_id', $order->id)->pluck('id')->all();
 
-            foreach ($chunk as $id) {
-                for ($o = 0; $o < 8; $o++) {
-                    $options[] = ['order_item_id' => $id, 'name' => "Option {$o}", 'created_at' => $now, 'updated_at' => $now];
-                }
+    foreach (array_chunk($ids, 100) as $chunk) {
+        $options = [];
+        $pivots = [];
 
-                $pivots[] = ['order_item_id' => $id, 'tag_id' => $tag->id, 'weight' => 1];
+        foreach ($chunk as $id) {
+            for ($o = 0; $o < 8; $o++) {
+                $options[] = ['order_item_id' => $id, 'name' => "Option {$o}", 'created_at' => $now, 'updated_at' => $now];
             }
 
-            DB::table('item_options')->insert($options);
-            DB::table('order_item_tag')->insert($pivots);
+            $pivots[] = ['order_item_id' => $id, 'tag_id' => $tag->id, 'weight' => 1];
         }
 
-        return $order->fresh();
+        DB::table('item_options')->insert($options);
+        DB::table('order_item_tag')->insert($pivots);
     }
+
+    return $order->fresh();
 }

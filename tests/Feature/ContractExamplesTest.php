@@ -1,7 +1,5 @@
 <?php
 
-namespace Pharaonic\Laravel\DeepReplicate\Tests\Feature;
-
 use Pharaonic\Laravel\DeepReplicate\Exceptions\ConflictingRelationshipRuleException;
 use Pharaonic\Laravel\DeepReplicate\Exceptions\EmptyRelationshipSelectionException;
 use Pharaonic\Laravel\DeepReplicate\Exceptions\IncompatibleRelationOptionsException;
@@ -9,165 +7,147 @@ use Pharaonic\Laravel\DeepReplicate\Exceptions\UnsupportedReuseException;
 use Pharaonic\Laravel\DeepReplicate\Facades\DeepReplicate;
 use Pharaonic\Laravel\DeepReplicate\RelationRule;
 use Pharaonic\Laravel\DeepReplicate\Tests\Fixtures\Models\Order;
-use Pharaonic\Laravel\DeepReplicate\Tests\TestCase;
 
-class ContractExamplesTest extends TestCase
-{
-    public function test_fluent_facade(): void
-    {
-        $order = $this->seedOrder();
+test('fluent facade', function () {
+    $order = $this->seedOrder();
 
-        $result = DeepReplicate::for($order)
-            ->copy('items', 'items.options')
-            ->reuse('items.product', 'customer')
-            ->skip('payments')
-            ->replicate();
+    $result = DeepReplicate::for($order)
+        ->copy('items', 'items.options')
+        ->reuse('items.product', 'customer')
+        ->skip('payments')
+        ->replicate();
 
-        $this->assertTrue($result->model()->exists);
-        $this->assertNotSame($order->getKey(), $result->model()->getKey());
+    expect($result->model()->exists)->toBeTrue();
+    expect($result->model()->getKey())->not->toBe($order->getKey());
 
-        /** @var Order $copy */
-        $copy = $result->model();
-        $this->assertSame(2, $copy->items()->count());
-        $this->assertSame(3, $copy->items()->withCount('options')->get()->sum('options_count'));
-        $this->assertSame(0, $copy->payments()->count());
-        $this->assertSame($order->customer_id, $copy->customer_id);
-        $this->assertSame(
-            $order->items()->orderBy('id')->pluck('product_id')->all(),
-            $copy->items()->orderBy('id')->pluck('product_id')->all()
-        );
-    }
+    /** @var Order $copy */
+    $copy = $result->model();
+    expect($copy->items()->count())->toBe(2);
+    expect($copy->items()->withCount('options')->get()->sum('options_count'))->toBe(3);
+    expect($copy->payments()->count())->toBe(0);
+    expect($copy->customer_id)->toBe($order->customer_id);
+    expect($copy->items()->orderBy('id')->pluck('product_id')->all())->toBe($order->items()->orderBy('id')->pluck('product_id')->all());
+});
 
-    public function test_trait_with_array(): void
-    {
-        $order = $this->seedOrder();
+test('trait with array', function () {
+    $order = $this->seedOrder();
 
-        $result = $order->deepReplicate([
-            'items' => 'copy',
-            'items.options' => 'copy',
-            'items.product' => 'reuse',
-            'customer' => 'reuse',
-            'payments' => 'skip',
-        ])->replicate();
+    $result = $order->deepReplicate([
+        'items' => 'copy',
+        'items.options' => 'copy',
+        'items.product' => 'reuse',
+        'customer' => 'reuse',
+        'payments' => 'skip',
+    ])->replicate();
 
-        $this->assertSame(6, $result->stats()->copiedModels());
-        $this->assertSame(3, $result->stats()->reusedModels());
-    }
+    expect($result->stats()->copiedModels())->toBe(6);
+    expect($result->stats()->reusedModels())->toBe(3);
+});
 
-    public function test_trait_with_fluent_configuration(): void
-    {
-        $order = $this->seedOrder();
+test('trait with fluent configuration', function () {
+    $order = $this->seedOrder();
 
-        $result = $order->deepReplicate('items')
-            ->copy('items.options')
-            ->reuse('items.product', 'customer')
-            ->configure('items', function (RelationRule $rule): void {
-                $rule->exclude(['external_id']);
-            })
-            ->with(['status' => 'draft'])
-            ->replicate();
+    $result = $order->deepReplicate('items')
+        ->copy('items.options')
+        ->reuse('items.product', 'customer')
+        ->configure('items', function (RelationRule $rule): void {
+            $rule->exclude(['external_id']);
+        })
+        ->with(['status' => 'draft'])
+        ->replicate();
 
-        $copy = $result->model();
-        $this->assertSame('draft', $copy->status);
-        $this->assertSame([null, null], $copy->items()->pluck('external_id')->all());
-        $this->assertSame('paid', $order->fresh()->status);
-    }
+    $copy = $result->model();
+    expect($copy->status)->toBe('draft');
+    expect($copy->items()->pluck('external_id')->all())->toBe([null, null]);
+    expect($order->fresh()->status)->toBe('paid');
+});
 
-    public function test_intentional_failures(): void
-    {
-        $order = $this->seedOrder();
-        $user = $this->seedBlog()['author'];
-        $before = $this->counts();
+test('intentional failures', function () {
+    $order = $this->seedOrder();
+    $user = $this->seedBlog()['author'];
+    $before = $this->counts();
 
-        $this->assertThrows(\ArgumentCountError::class, function () use ($order) {
-            // @phpstan-ignore-next-line
-            $order->deepReplicate();
-        });
-        $this->assertThrows(EmptyRelationshipSelectionException::class, function () use ($order) {
-            $order->deepReplicate([]);
-        });
-        $this->assertThrows(EmptyRelationshipSelectionException::class, function () use ($order) {
-            DeepReplicate::for($order)->replicate();
-        });
-        $this->assertThrows(UnsupportedReuseException::class, function () use ($user) {
-            DeepReplicate::for($user)->reuse('posts')->replicate();
-        });
-        $this->assertThrows(ConflictingRelationshipRuleException::class, function () use ($order) {
-            DeepReplicate::for($order)->copy('items')->reuse('items')->replicate();
-        });
-        $this->assertThrows(IncompatibleRelationOptionsException::class, function () use ($order) {
-            DeepReplicate::for($order)->skip('items')->copy('items.options')->replicate();
-        });
+    $this->assertThrown(\ArgumentCountError::class, function () use ($order) {
+        // @phpstan-ignore-next-line
+        $order->deepReplicate();
+    });
+    $this->assertThrown(EmptyRelationshipSelectionException::class, function () use ($order) {
+        $order->deepReplicate([]);
+    });
+    $this->assertThrown(EmptyRelationshipSelectionException::class, function () use ($order) {
+        DeepReplicate::for($order)->replicate();
+    });
+    $this->assertThrown(UnsupportedReuseException::class, function () use ($user) {
+        DeepReplicate::for($user)->reuse('posts')->replicate();
+    });
+    $this->assertThrown(ConflictingRelationshipRuleException::class, function () use ($order) {
+        DeepReplicate::for($order)->copy('items')->reuse('items')->replicate();
+    });
+    $this->assertThrown(IncompatibleRelationOptionsException::class, function () use ($order) {
+        DeepReplicate::for($order)->skip('items')->copy('items.options')->replicate();
+    });
 
-        $this->assertSame($before, $this->counts());
-    }
+    expect($this->counts())->toBe($before);
+});
 
-    public function test_default_foreign_key_retention(): void
-    {
-        $post = $this->seedBlog()['post'];
+test('default foreign key retention', function () {
+    $post = $this->seedBlog()['post'];
 
-        $new = DeepReplicate::for($post)->copy('comments')->replicate()->model();
+    $new = DeepReplicate::for($post)->copy('comments')->replicate()->model();
 
-        $this->assertSame($post->author_id, $new->author_id);
-    }
+    expect($new->author_id)->toBe($post->author_id);
+});
 
-    public function test_new_owner_with_the_same_related_tags(): void
-    {
-        $blog = $this->seedBlog();
-        $post = $blog['post'];
-        $tags = $this->rows('tags');
-        $pivots = $this->rows('taggables');
+test('new owner with the same related tags', function () {
+    $blog = $this->seedBlog();
+    $post = $blog['post'];
+    $tags = $this->rows('tags');
+    $pivots = $this->rows('taggables');
 
-        $result = DeepReplicate::for($post)->reuse('tags')->replicate();
+    $result = DeepReplicate::for($post)->reuse('tags')->replicate();
 
-        $this->assertEquals(
-            $post->tags()->orderBy('tags.id')->pluck('tags.id')->all(),
-            $result->model()->tags()->orderBy('tags.id')->pluck('tags.id')->all()
-        );
-        $this->assertSame($tags, $this->rows('tags'));
-        $this->assertSame($pivots, array_slice($this->rows('taggables'), 0, count($pivots)));
-        $this->assertSame(2, $post->tags()->count());
-    }
+    expect($result->model()->tags()->orderBy('tags.id')->pluck('tags.id')->all())->toEqual($post->tags()->orderBy('tags.id')->pluck('tags.id')->all());
+    expect($this->rows('tags'))->toBe($tags);
+    expect(array_slice($this->rows('taggables'), 0, count($pivots)))->toBe($pivots);
+    expect($post->tags()->count())->toBe(2);
+});
 
-    public function test_fresh_and_loaded_distinction(): void
-    {
-        $post = $this->seedBlog()['post'];
-        $post->load(['comments' => function ($q) {
-            $q->where('approved', true);
-        }]);
+test('fresh and loaded distinction', function () {
+    $post = $this->seedBlog()['post'];
+    $post->load(['comments' => function ($q) {
+        $q->where('approved', true);
+    }]);
 
-        $all = DeepReplicate::for($post)->copy('comments')->replicate();
-        $subset = DeepReplicate::for($post)->copy('comments')->usingLoaded('comments')->replicate();
+    $all = DeepReplicate::for($post)->copy('comments')->replicate();
+    $subset = DeepReplicate::for($post)->copy('comments')->usingLoaded('comments')->replicate();
 
-        $this->assertSame(2, $all->model()->comments()->count());
-        $this->assertSame(1, $subset->model()->comments()->count());
-    }
+    expect($all->model()->comments()->count())->toBe(2);
+    expect($subset->model()->comments()->count())->toBe(1);
+});
 
-    public function test_inspection(): void
-    {
-        $order = $this->seedOrder();
-        $before = $this->counts();
+test('inspection', function () {
+    $order = $this->seedOrder();
+    $before = $this->counts();
 
-        $plan = DeepReplicate::for($order)
-            ->copy('items', 'items.options')
-            ->reuse('items.product')
-            ->dryRun();
+    $plan = DeepReplicate::for($order)
+        ->copy('items', 'items.options')
+        ->reuse('items.product')
+        ->dryRun();
 
-        $this->assertSame($before, $this->counts());
-        $this->assertSame(6, $plan->stats()->copiedModels());
+    expect($this->counts())->toBe($before);
+    expect($plan->stats()->copiedModels())->toBe(6);
 
-        $result = DeepReplicate::for($order)
-            ->copy('items', 'items.options')
-            ->reuse('items.product')
-            ->replicate();
+    $result = DeepReplicate::for($order)
+        ->copy('items', 'items.options')
+        ->reuse('items.product')
+        ->replicate();
 
-        $replica = $result->model();
-        $mapping = $result->map();
-        $stats = $result->stats();
+    $replica = $result->model();
+    $mapping = $result->map();
+    $stats = $result->stats();
 
-        $this->assertTrue($replica->exists);
-        $this->assertCount(6, $mapping->all());
-        $this->assertSame($plan->stats()->copiedModels(), $stats->copiedModels());
-        $this->assertSame($plan->stats()->reusedModels(), $stats->reusedModels());
-    }
-}
+    expect($replica->exists)->toBeTrue();
+    expect($mapping->all())->toHaveCount(6);
+    expect($stats->copiedModels())->toBe($plan->stats()->copiedModels());
+    expect($stats->reusedModels())->toBe($plan->stats()->reusedModels());
+});

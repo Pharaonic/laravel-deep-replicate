@@ -106,7 +106,7 @@ final class MorphToHandler implements RelationHandler
 
             $dictionary = [];
 
-            foreach ($query->get()->all() as $model) {
+            foreach ($query->get() as $model) {
                 /** @var Model $model */
                 $key = $model->getAttribute($ownerKey);
                 $dictionary[is_scalar($key) ? (string) $key : ''] = $model;

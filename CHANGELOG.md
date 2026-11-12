@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented here.
 
-## 7.0.0 - Unreleased
+## 7.0.0 - 2026-11-12
 
 ### Compatibility
 
@@ -10,7 +10,7 @@ All notable changes to this project are documented here.
 - The same API and behavior as 6.0.0, including `AfterCommitUnavailableException` for `afterCommit` inside a caller's transaction (Laravel 8 adds the native support).
 - The test suite runs on Pest.
 
-## 6.0.0 - Unreleased
+## 6.0.0 - 2026-11-12
 
 ### Added
 

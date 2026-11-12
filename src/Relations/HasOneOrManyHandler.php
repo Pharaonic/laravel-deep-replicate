@@ -26,6 +26,9 @@ final class HasOneOrManyHandler implements RelationHandler
 {
     use EagerFetching;
 
+    /**
+     * @param  Relation<Model, Model, mixed>  $relation
+     */
     public function supports(Relation $relation): bool
     {
         return in_array(get_class($relation), [HasOne::class, HasMany::class, MorphOne::class, MorphMany::class], true);
@@ -41,24 +44,36 @@ final class HasOneOrManyHandler implements RelationHandler
         return false;
     }
 
+    /**
+     * @param  Relation<Model, Model, mixed>  $relation
+     */
     public function staticRelated(Relation $relation): Model
     {
         return $relation->getRelated();
     }
 
+    /**
+     * @param  Relation<Model, Model, mixed>  $relation
+     */
     public function parentColumns(Relation $relation): array
     {
         return [];
     }
 
+    /**
+     * @param  Relation<Model, Model, mixed>  $relation
+     */
     public function fetch(Relation $relation, array $parents, string $name, string $path, array $filters, bool $withoutGlobalScopes, Graph $graph): array
     {
         return $this->eager($relation, $parents, $name, $filters, $withoutGlobalScopes);
     }
 
+    /**
+     * @param  Relation<Model, Model, mixed>  $relation
+     */
     public function connect(Graph $graph, GraphNode $parent, GraphNode $target, Relation $relation, ?Model $pivot, string $path): void
     {
-        /** @var HasOneOrMany $relation */
+        /** @var HasOneOrMany<Model, Model, mixed> $relation */
         $target->assign(new LinkAssignment($relation->getForeignKeyName(), $parent, $relation->getLocalKeyName(), null, $path));
 
         if ($relation instanceof MorphOneOrMany) {

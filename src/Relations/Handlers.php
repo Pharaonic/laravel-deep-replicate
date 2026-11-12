@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Pharaonic\Laravel\DeepReplicate\Relations;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 
 /**
@@ -26,6 +27,9 @@ final class Handlers
         ];
     }
 
+    /**
+     * @param  Relation<Model, Model, mixed>  $relation
+     */
     public function for(Relation $relation): ?RelationHandler
     {
         foreach ($this->handlers as $handler) {

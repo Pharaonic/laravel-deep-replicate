@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 trait EagerFetching
 {
     /**
+     * @param  Relation<Model, Model, mixed>  $relation
      * @param  list<Model>  $parents
      * @param  list<callable>  $filters
      * @param  (callable(Model): (Model|null))|null  $pivotOf

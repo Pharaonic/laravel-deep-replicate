@@ -255,8 +255,7 @@ test('after commit is dropped when the outer transaction rolls back', function (
 
         DB::beginTransaction();
         $this->assertThrown(AfterCommitUnavailableException::class, function () use ($order) {
-            DeepReplicate::for($order)->copy('items')->afterCommit(function () {
-            })->replicate();
+            DeepReplicate::for($order)->copy('items')->afterCommit(function () {})->replicate();
         });
         DB::rollBack();
 

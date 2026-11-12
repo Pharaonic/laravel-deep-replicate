@@ -210,8 +210,7 @@ test('invalid paths and strategies are rejected', function () {
         DeepReplicate::for($order, [123]);
     });
 
-    foreach (['clone', '', null, 1, true, ['copy'], function () {
-    }] as $strategy) {
+    foreach (['clone', '', null, 1, true, ['copy'], function () {}] as $strategy) {
         $this->assertThrown(InvalidRelationshipStrategyException::class, function () use ($order, $strategy) {
             DeepReplicate::for($order, ['items' => $strategy]);
         });
@@ -267,8 +266,7 @@ test('nested invalid paths name the nested model', function () {
 
 test('options must target selected paths with a compatible strategy', function () {
     $order = $this->seedOrder();
-    $noop = function () {
-    };
+    $noop = function () {};
 
     $this->assertThrown(InvalidRelationshipPathException::class, function () use ($order, $noop) {
         DeepReplicate::for($order)->copy('items')->filter('payments', $noop)->dryRun();
